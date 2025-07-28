@@ -1,5 +1,5 @@
 import { createFilter } from "@rollup/pluginutils";
-import type { PluginCreator } from "postcss";
+import type { PluginCreator, Node } from "postcss";
 
 const DEFAULT_INCLUDE = "**/*.module.css";
 const DEFAULT_LAYERNAME = "components";
@@ -38,12 +38,25 @@ const plugin: PluginCreator<PluginOptions> = (
       }
 
       for (const layerName of layerNames) {
+        const importNodes: Node[] = [];
+        const regularNodes: Node[] = [];
+
+        for (const node of root.nodes) {
+          if (node.type === "atrule" && node.name === "import") {
+            importNodes.push(node);
+          } else {
+            regularNodes.push(node);
+          }
+        }
+
         const layer = new AtRule({
           name: "layer",
           params: layerName,
-          nodes: root.nodes,
+          nodes: regularNodes,
         });
+
         root.removeAll();
+        root.append(importNodes);
         root.append(layer);
       }
     },

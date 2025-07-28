@@ -192,4 +192,31 @@ describe("postcss-assign-layer", () => {
       }
     );
   });
+
+  it("do not wrap @imports", async () => {
+    const importPath = path.resolve("test/fixtures/import.css");
+    const importFile = readFileSync(importPath, "utf-8");
+
+    const config = [
+      {
+        include: "**/*.css",
+        layerName: "styles",
+      },
+    ];
+
+    await run(
+      importFile,
+      `@import "base.css";
+
+      @layer styles {
+        a {
+          color: FireBrick;
+        }
+      }`,
+      config,
+      {
+        from: importPath,
+      }
+    );
+  });
 });
